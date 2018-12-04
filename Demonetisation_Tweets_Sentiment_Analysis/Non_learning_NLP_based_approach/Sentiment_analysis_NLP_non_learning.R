@@ -1,17 +1,21 @@
-library(readr)
+library(readr) 
 library(purrr) 
 library(plyr)
 library(dplyr)
 library(stringr)
 library(ggplot2)
 
+#first I read the demonetisation csv file as input
 demonetisationData <- read.csv("C:/D_ DheerajDoodhya/IIITB_MTech_Projects/Demonetisation_Tweets_Sentiment_Analysis/Demonetization_data29th.csv")
 
+#extracting the tweets data from above dataset, don't need other columns for sentiment analysis
 tweets_data <- as.factor(demonetisationData$CONTENT)
 
+#Reading positive and negative data words from standard list of positive and negative words for sentiment score calculation
 positive_words = scan('C:/D_ DheerajDoodhya/IIITB_MTech_Projects/Demonetisation_Tweets_Sentiment_Analysis/Non_learning_NLP_based_approach/positive-words.txt',what='character',sep=" ")
 negative_words = scan('C:/D_ DheerajDoodhya/IIITB_MTech_Projects/Demonetisation_Tweets_Sentiment_Analysis/Non_learning_NLP_based_approach/negative-words.txt',what='character',sep=" ")
 
+#Function to calculate sentiment score
 score.sentiment <- function(sentences, positive_words, negative_words, .progress='none')
 {
   require(plyr)
@@ -64,22 +68,24 @@ score.sentiment <- function(sentences, positive_words, negative_words, .progress
   return(scores.df)
 }
 
+#calculating sentiment score for all the tweets
 sentiment_score <- score.sentiment(tweets_data,positive_words,negative_words,.progress='text')
 
+#evaluating whether the sentiment score obtained is positive, negative or neutral
 sentiment_score$positive <- as.numeric(sentiment_score$score >0)
 sentiment_score$negative <- as.numeric(sentiment_score$score <0)
 sentiment_score$neutral <- as.numeric(sentiment_score$score==0)
-#Calculating positive, negative and neutral sentiments.
 
-sentiment_score$polarity <- ifelse(sentiment_score$score >0,"Positive",ifelse(sentiment_score$score < 0,"Negative",ifelse(sentiment_score$score==0,"Neutral",0)))
 #Creating polarity variable for each sentence based on their sentiment_score
+sentiment_score$polarity <- ifelse(sentiment_score$score >0,"Positive",ifelse(sentiment_score$score < 0,"Negative",ifelse(sentiment_score$score==0,"Neutral",0)))
 
+#Adding new column 'sentiments' into dataset to store sentiment analysis score
 demonetisationData$sentiments<-sentiment_score$polarity
-#Adding new column 'sentiments' into dataset for future analysis. 
 
+#Adding tweets and there corresponding sentiment to a new dataset
 demonetisationSentiments <- data.frame(demonetisationData$CONTENT, demonetisationData$sentiments);
 
-write.csv(demonetisationSentiments,"C:/D_ DheerajDoodhya/IIITB_MTech_Projects/Demonetisation_Tweets_Sentiment_Analysis/dataset_with_sentiments.csv")
 #Exporting new generated dataset into csv file
+write.csv(demonetisationSentiments,"C:/D_ DheerajDoodhya/IIITB_MTech_Projects/Demonetisation_Tweets_Sentiment_Analysis/dataset_with_sentiments.csv")
 
 
